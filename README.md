@@ -1,5 +1,13 @@
+> Sofa away from me, so far I just can't sit :musical_note:
+>
+>  — Mark Knopfler, 1985
+
+> Sofa, so good… so what!
+>
+>  — Dave Mustaine, 1988
+
 # sofa-away (WIP)
-Annoying reminders to not use your laptop in the couch (Sofa away from me, so far I just can't sit :musical_note:)
+Annoying reminders to not use your laptop in the couch.
 
 I have the bad habit of using my laptop in my couch and I want to do
 something about it. I bought a BLE beacon which I plan to leave close
