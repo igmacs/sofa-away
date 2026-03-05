@@ -1,5 +1,8 @@
 //! Discover Bluetooth devices and list them.
 
+mod disruptor;
+use disruptor::{Disruptor, DummyDisruptor};
+
 use bluer::{AdapterEvent, Address, DeviceEvent, DeviceProperty, DiscoveryFilter, DiscoveryTransport};
 use futures::{pin_mut, stream::SelectAll, StreamExt};
 use std::{collections::HashSet, env};
@@ -48,7 +51,8 @@ async fn main() -> bluer::Result<()> {
                             Some(v) => {
                                 println!("Rssi is {v}");
                                 if v > -70 {
-                                    println!("Device is close!")
+                                    println!("Device is close!");
+                                    DummyDisruptor::new().disrupt()
                                 } else {
                                     println!("Device is far!")
                                 }
@@ -66,7 +70,8 @@ async fn main() -> bluer::Result<()> {
                     DeviceProperty::Rssi(v) => {
                         println!("Rssi is {v}");
                         if v > -70 {
-                            println!("Device is close!")
+                            println!("Device is close!");
+                            DummyDisruptor::new().disrupt()
                         } else {
                             println!("Device is far!")
                         }
