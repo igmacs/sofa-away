@@ -63,9 +63,6 @@ async fn main() -> bluer::Result<()> {
                         let change_events = device.events().await?.map(move |evt| (addr, evt));
                         all_change_events.push(change_events);
                     }
-                    AdapterEvent::DeviceRemoved(addr) => {
-                        println!("Device removed: {addr}");
-                    }
                     _ => (),
                 }
                 println!();
