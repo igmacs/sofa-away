@@ -2,7 +2,7 @@
 >
 >  — Mark Knopfler, 1985
 
-> Sofa, so good… so what!
+> Sofa so good… so what!
 >
 >  — Dave Mustaine, 1988
 
@@ -16,3 +16,10 @@ background that detects when it's close and reminds me to go to the
 desk, in different annoying ways. I saw that there are good BLE
 libraries in Rust, so I used this as a excuse to learn the language
 and do my first project in it.
+
+## Usage
+
+
+To invoke manually, just run `cargo run -- <BEACON_MAC_ADDRESS>`. Later
+we will add instructions for always having it running automatically in
+the background
