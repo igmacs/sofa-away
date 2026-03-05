@@ -1,6 +1,6 @@
 //! Discover Bluetooth devices and list them.
 
-use bluer::{AdapterEvent, Address, DeviceEvent, DiscoveryFilter, DiscoveryTransport};
+use bluer::{AdapterEvent, Address, DeviceEvent, DeviceProperty, DiscoveryFilter, DiscoveryTransport};
 use futures::{pin_mut, stream::SelectAll, StreamExt};
 use std::{collections::HashSet, env};
 
@@ -41,7 +41,19 @@ async fn main() -> bluer::Result<()> {
                                 continue;
                             }
                         };
-                        println!("Rssi: {:?}", device.rssi().await?);
+                        match device.rssi().await? {
+                            None => {
+                                println!("Device distance unknown");
+                            }
+                            Some(v) => {
+                                println!("Rssi is {v}");
+                                if v > -70 {
+                                    println!("Device is close!")
+                                } else {
+                                    println!("Device is far!")
+                                }
+                            }
+                        }
 
                         let change_events = device.events().await?.map(move |evt| (addr, evt));
                         all_change_events.push(change_events);
@@ -49,9 +61,18 @@ async fn main() -> bluer::Result<()> {
                     _ => (),
                 }
             }
-            Some((addr, DeviceEvent::PropertyChanged(property))) = all_change_events.next() => {
-                println!("Device changed: {addr}");
-                println!("    {property:?}");
+            Some((_addr, DeviceEvent::PropertyChanged(property))) = all_change_events.next() => {
+                match property {
+                    DeviceProperty::Rssi(v) => {
+                        println!("Rssi is {v}");
+                        if v > -70 {
+                            println!("Device is close!")
+                        } else {
+                            println!("Device is far!")
+                        }
+                    }
+                    _ => ()
+                }
             }
             else => break
         }
