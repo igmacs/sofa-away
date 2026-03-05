@@ -22,21 +22,8 @@ async fn query_device(adapter: &Adapter, addr: Address) -> bluer::Result<()> {
     Ok(())
 }
 
-async fn query_all_device_properties(adapter: &Adapter, addr: Address) -> bluer::Result<()> {
-    let device = adapter.device(addr)?;
-    let props = device.all_properties().await?;
-    for prop in props {
-        println!("    {:?}", &prop);
-    }
-    Ok(())
-}
-
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> bluer::Result<()> {
-    let with_changes = env::args().any(|arg| arg == "--changes");
-    let all_properties = env::args().any(|arg| arg == "--all-properties");
-    let le_only = env::args().any(|arg| arg == "--le");
-    let br_edr_only = env::args().any(|arg| arg == "--bredr");
     let filter_addr: HashSet<_> = env::args().filter_map(|arg| arg.parse::<Address>().ok()).collect();
 
     env_logger::init();
@@ -46,13 +33,7 @@ async fn main() -> bluer::Result<()> {
     adapter.set_powered(true).await?;
 
     let filter = DiscoveryFilter {
-        transport: if le_only {
-            DiscoveryTransport::Le
-        } else if br_edr_only {
-            DiscoveryTransport::BrEdr
-        } else {
-            DiscoveryTransport::Auto
-        },
+        transport: DiscoveryTransport::Auto,
         ..Default::default()
     };
     adapter.set_discovery_filter(filter).await?;
@@ -73,20 +54,14 @@ async fn main() -> bluer::Result<()> {
                         }
 
                         println!("Device added: {addr}");
-                        let res = if all_properties {
-                            query_all_device_properties(&adapter, addr).await
-                        } else {
-                            query_device(&adapter, addr).await
-                        };
+                        let res = query_device(&adapter, addr).await;
                         if let Err(err) = res {
                             println!("    Error: {}", &err);
                         }
 
-                        if with_changes {
-                            let device = adapter.device(addr)?;
-                            let change_events = device.events().await?.map(move |evt| (addr, evt));
-                            all_change_events.push(change_events);
-                        }
+                        let device = adapter.device(addr)?;
+                        let change_events = device.events().await?.map(move |evt| (addr, evt));
+                        all_change_events.push(change_events);
                     }
                     AdapterEvent::DeviceRemoved(addr) => {
                         println!("Device removed: {addr}");
