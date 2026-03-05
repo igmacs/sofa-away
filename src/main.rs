@@ -1,26 +1,8 @@
 //! Discover Bluetooth devices and list them.
 
-use bluer::{Adapter, AdapterEvent, Address, DeviceEvent, DiscoveryFilter, DiscoveryTransport};
+use bluer::{AdapterEvent, Address, DeviceEvent, DiscoveryFilter, DiscoveryTransport};
 use futures::{pin_mut, stream::SelectAll, StreamExt};
 use std::{collections::HashSet, env};
-
-async fn query_device(adapter: &Adapter, addr: Address) -> bluer::Result<()> {
-    let device = adapter.device(addr)?;
-    println!("    Address type:       {}", device.address_type().await?);
-    println!("    Name:               {:?}", device.name().await?);
-    println!("    Icon:               {:?}", device.icon().await?);
-    println!("    Class:              {:?}", device.class().await?);
-    println!("    UUIDs:              {:?}", device.uuids().await?.unwrap_or_default());
-    println!("    Paired:             {:?}", device.is_paired().await?);
-    println!("    Connected:          {:?}", device.is_connected().await?);
-    println!("    Trusted:            {:?}", device.is_trusted().await?);
-    println!("    Modalias:           {:?}", device.modalias().await?);
-    println!("    RSSI:               {:?}", device.rssi().await?);
-    println!("    TX power:           {:?}", device.tx_power().await?);
-    println!("    Manufacturer data:  {:?}", device.manufacturer_data().await?);
-    println!("    Service data:       {:?}", device.service_data().await?);
-    Ok(())
-}
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> bluer::Result<()> {
@@ -29,7 +11,6 @@ async fn main() -> bluer::Result<()> {
     env_logger::init();
     let session = bluer::Session::new().await?;
     let adapter = session.default_adapter().await?;
-    println!("Discovering devices using Bluetooth adapter {}\n", adapter.name());
     adapter.set_powered(true).await?;
 
     let filter = DiscoveryFilter {
@@ -37,7 +18,7 @@ async fn main() -> bluer::Result<()> {
         ..Default::default()
     };
     adapter.set_discovery_filter(filter).await?;
-    println!("Using discovery filter:\n{:#?}\n\n", adapter.discovery_filter().await);
+    adapter.discovery_filter().await;
 
     let device_events = adapter.discover_devices().await?;
     pin_mut!(device_events);
@@ -53,19 +34,20 @@ async fn main() -> bluer::Result<()> {
                             continue;
                         }
 
-                        println!("Device added: {addr}");
-                        let res = query_device(&adapter, addr).await;
-                        if let Err(err) = res {
-                            println!("    Error: {}", &err);
-                        }
+                        let device = match adapter.device(addr){
+                            Ok(v) => v,
+                            Err(e) => {
+                                println!("    Error: {}", &e);
+                                continue;
+                            }
+                        };
+                        println!("Rssi: {:?}", device.rssi().await?);
 
-                        let device = adapter.device(addr)?;
                         let change_events = device.events().await?.map(move |evt| (addr, evt));
                         all_change_events.push(change_events);
                     }
                     _ => (),
                 }
-                println!();
             }
             Some((addr, DeviceEvent::PropertyChanged(property))) = all_change_events.next() => {
                 println!("Device changed: {addr}");
