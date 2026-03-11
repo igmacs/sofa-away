@@ -8,3 +8,4 @@ bluer = { version = "0.17.4", features = ["full"] }
 env_logger = "0.11.9"
 futures = "0.3.32"
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
+open = "5"

@@ -1,7 +1,7 @@
 //! Discover Bluetooth devices and list them.
 
 mod disruptor;
-use disruptor::{Disruptor, DummyDisruptor};
+use disruptor::{Disruptor, QuasimodoDisruptor};
 
 use bluer::{AdapterEvent, Address, DeviceEvent, DeviceProperty, DiscoveryFilter, DiscoveryTransport};
 use futures::{pin_mut, stream::SelectAll, StreamExt};
@@ -52,7 +52,7 @@ async fn main() -> bluer::Result<()> {
                                 println!("Rssi is {v}");
                                 if v > -70 {
                                     println!("Device is close!");
-                                    DummyDisruptor::new().disrupt()
+                                    QuasimodoDisruptor::new().disrupt()
                                 } else {
                                     println!("Device is far!")
                                 }
@@ -71,7 +71,7 @@ async fn main() -> bluer::Result<()> {
                         println!("Rssi is {v}");
                         if v > -70 {
                             println!("Device is close!");
-                            DummyDisruptor::new().disrupt()
+                            QuasimodoDisruptor::new().disrupt()
                         } else {
                             println!("Device is far!")
                         }
